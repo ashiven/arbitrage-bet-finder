@@ -34,6 +34,7 @@ class BCGameParser(MatchParser):
     def get_matches(self):
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
+        options.add_argument("headless")
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
         caps = DesiredCapabilities.CHROME
         caps["pageLoadStrategy"] = "normal"
@@ -92,7 +93,7 @@ class BCGameParser(MatchParser):
 
             except Exception as e:
                 print(f"Something went wrong getting matches. Retrying...")
-                # print(e)
+                print(e)
 
 
 class ThunderPickParser(MatchParser):
@@ -106,6 +107,7 @@ class ThunderPickParser(MatchParser):
     def get_matches(self):
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
+        options.add_argument("headless")
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
         caps = DesiredCapabilities.CHROME
         caps["pageLoadStrategy"] = "normal"
@@ -123,28 +125,35 @@ class ThunderPickParser(MatchParser):
                     root_container.get_attribute("outerHTML"), "html.parser"
                 )
 
-                home_teams = soup.find_all(
-                    "div", class_="match-row__home-name match-row__participant-name"
+                matches = soup.find_all(
+                    "div",
+                    class_="match-row__container match-row__container--medium match-row__container--no-drawsticky-header match-list-header",
                 )
-                away_teams = soup.find_all(
-                    "div", class_="match-row__away-name match-row__participant-name"
-                )
+                print(matches)
 
-                odds = soup.find_all("span", class_="odds-button__odds")
-
-                for i in range(0, len(odds), 2):
-                    self.matches[
-                        (
-                            home_teams[i // 2].text.upper(),
-                            away_teams[i // 2].text.upper(),
-                        )
-                    ] = (
-                        float(odds[i].text),
-                        float(odds[i + 1].text),
+                for match in matches:
+                    team_one = (
+                        match.find(
+                            "div",
+                            class_="match-row__home-name match-row__participant-name",
+                        ).text.upper(),
+                    )
+                    team_two = (
+                        match.find(
+                            "div",
+                            class_="match-row__away-name match-row__participant-name",
+                        ).text.upper(),
+                    )
+                    print(team_one)
+                    print(team_two)
+                    odds = (match.find_all("span", class_="odds-button__odds"),)
+                    self.matches[(team_one, team_two)] = (
+                        float(odds[0].text),
+                        float(odds[1].text),
                     )
 
                 break
 
             except Exception as e:
                 print(f"Something went wrong getting matches. Retrying..")
-                # print(e)
+                print(e)
