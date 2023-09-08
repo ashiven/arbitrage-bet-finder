@@ -6,15 +6,15 @@ from bettype import BetType
 def main():
     AS = ArbitrageService()
 
-    ## initialize parsers
-    bc = BCGameParser(variant=BetType.SOCCER, verbose=False)
-    tp = ThunderPickParser(variant=BetType.SOCCER, verbose=False)
+    ## initialize parsers (the SOCCER variant does not work yet on parsers)
+    bc = BCGameParser(variant=BetType.CSGO, verbose=False)
+    tp = ThunderPickParser(variant=BetType.CSGO, verbose=False)
 
     ## add parsers to service
     AS.add_parser(bc)
     AS.add_parser(tp)
 
-    ## get the latest matches and their odds for every service
+    ## get the latest matches and their odds for every website
     AS.accumulate_matches()
 
     ## find out if there are any arbitrages across the sites
