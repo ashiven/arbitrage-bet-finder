@@ -24,7 +24,7 @@ class BCGameParser(MatchParser):
     def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
         URLS = {
             BetType.CSGO: "https://bc.game/sports?bt-path=%2F%3FtopSport%3Dcounter-strike-109",
-            BetType.SOCCER: "",
+            BetType.SOCCER: "https://bc.game/sports?bt-path=%2Fsoccer-1",
         }
 
         self.url = URLS[variant]
@@ -110,7 +110,7 @@ class ThunderPickParser(MatchParser):
     def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
         URLS = {
             BetType.CSGO: "https://thunderpick.io/en/esports/csgo",
-            BetType.SOCCER: "",
+            BetType.SOCCER: "https://thunderpick.io/en/sports/football",
         }
 
         self.website = "thunderpick.io"
