@@ -32,6 +32,7 @@ class BCGameParser(MatchParser):
             print("something went wrong logging in")
 
     def get_matches(self):
+        print("[+] Getting matches from bc.game")
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
         options.add_argument("headless")
@@ -92,8 +93,8 @@ class BCGameParser(MatchParser):
                 break
 
             except Exception as e:
-                print(f"Something went wrong getting matches. Retrying...")
-                print(e)
+                print(f"[!] Something went wrong getting matches. Retrying...")
+                # print(e)
 
 
 class ThunderPickParser(MatchParser):
@@ -105,6 +106,7 @@ class ThunderPickParser(MatchParser):
         pass
 
     def get_matches(self):
+        print("[+] Getting matches from thunderpick.io")
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
         options.add_argument("headless")
@@ -127,33 +129,26 @@ class ThunderPickParser(MatchParser):
 
                 matches = soup.find_all(
                     "div",
-                    class_="match-row__container match-row__container--medium match-row__container--no-drawsticky-header match-list-header",
+                    class_="match-row__container match-row__container--medium match-row__container--no-draw",
                 )
-                print(matches)
 
                 for match in matches:
-                    team_one = (
-                        match.find(
-                            "div",
-                            class_="match-row__home-name match-row__participant-name",
-                        ).text.upper(),
-                    )
-                    team_two = (
-                        match.find(
-                            "div",
-                            class_="match-row__away-name match-row__participant-name",
-                        ).text.upper(),
-                    )
-                    print(team_one)
-                    print(team_two)
-                    odds = (match.find_all("span", class_="odds-button__odds"),)
-                    self.matches[(team_one, team_two)] = (
-                        float(odds[0].text),
-                        float(odds[1].text),
-                    )
+                    team_one = match.find(
+                        "div",
+                        class_="match-row__home-name match-row__participant-name",
+                    ).text.upper()
+                    team_two = match.find(
+                        "div",
+                        class_="match-row__away-name match-row__participant-name",
+                    ).text.upper()
+
+                    odds = match.find_all("span", class_="odds-button__odds")
+                    odd_one = float(odds[0].text) if len(odds) > 1 else "TBA"
+                    odd_two = float(odds[1].text) if len(odds) > 1 else "TBA"
+                    self.matches[(team_one, team_two)] = (odd_one, odd_two)
 
                 break
 
             except Exception as e:
-                print(f"Something went wrong getting matches. Retrying..")
-                print(e)
+                print(f"[!] Something went wrong getting matches. Retrying..")
+                # print(e)
