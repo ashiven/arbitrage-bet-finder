@@ -12,10 +12,11 @@ class ArbitrageService:
         self.parsers[name] = parser
 
     def show_matches(self):
+        print("\n")
         for match, odds in self.matches.items():
             print(f"----{match[0]} VS {match[1]}----\n")
             for odd, website in odds:
-                print(f"{website}:  {odd[0]}  {odd[1]}")
+                print("{:<15}  {:<4}  {:<4}".format(website, odd[0], odd[1]))
             print("\n")
 
     def accumulate_matches(self):
@@ -31,5 +32,21 @@ class ArbitrageService:
         self.show_matches()
 
     def find_arbitrages(self):
-        pass
-        # self.arbitrages
+        for match, odds in self.matches.items():
+            max_one = max(odds, key=lambda x: x[0][0])
+            max_two = max(odds, key=lambda x: x[0][1])
+            if max_one[0][0] == "TBA" or max_two[0][1] == "TBA":
+                continue
+
+            # calculate whether an arbitrage exists
+            arbitrage = 1 / max_one[0][0] + 1 / max_two[0][1]
+            found = False
+            if arbitrage < 1:
+                found = True
+                print(f"----{match[0]} VS {match[1]}----\n")
+                print(
+                    f"[!] Found an arbitrage between {max_one[1]} and {max_two[1]} with a percent of {arbitrage*100:.2f}%\n"
+                )
+
+        if not found:
+            print("Could not find any arbitrages :(")
