@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import re
 
 
 class MatchParser(ABC):
@@ -18,7 +19,7 @@ class MatchParser(ABC):
         pass
 
 
-class ggBetParser(MatchParser):
+class BCGameParser(MatchParser):
     def __init__(self):
         self.matches = dict()
         self.session = requests.session()
@@ -33,6 +34,7 @@ class ggBetParser(MatchParser):
     def get_matches(self):
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
         caps = DesiredCapabilities.CHROME
         caps["pageLoadStrategy"] = "normal"
         driver = webdriver.Chrome(
@@ -62,18 +64,35 @@ class ggBetParser(MatchParser):
                     if span.get_text(strip=True, separator=" ").strip() != ""
                 ]
 
-                STEP_SIZE = 107
-                for i in range(1, len(bets), STEP_SIZE):
-                    self.matches[(bets[i].text, bets[i + 1].text)] = (
-                        float(bets[i + 3].text),
-                        float(bets[i + 5].text),
-                    )
+                team_pattern = r"[a-zA-Z]"
+                for i in range(1, len(bets)):
+                    if (
+                        i < len(bets) - 1
+                        and len(bets[i].text) < 20
+                        and len(bets[i + 1].text) < 20
+                        and not "over" in bets[i].text
+                        and not "under" in bets[i].text
+                        and not "over" in bets[i + 1].text
+                        and not "under" in bets[i + 1].text
+                        and bool(re.match(team_pattern, bets[i].text))
+                        and bool(re.match(team_pattern, bets[i + 1].text))
+                    ):
+                        odds_offset, odd_pattern = i, r"^[-+]?\d*\.\d+$"
+                        while not bool(re.match(odd_pattern, bets[odds_offset].text)):
+                            odds_offset += 1
+
+                        self.matches[
+                            (bets[i].text.upper(), bets[i + 1].text.upper())
+                        ] = (
+                            float(bets[odds_offset].text),
+                            float(bets[odds_offset + 2].text),
+                        )
 
                 break
 
             except Exception as e:
                 print(f"Something went wrong getting matches. Retrying...")
-                print(e)
+                # print(e)
 
 
 class ThunderPickParser(MatchParser):
@@ -82,16 +101,12 @@ class ThunderPickParser(MatchParser):
         self.session = requests.session()
 
     def login(self, username, password):
-        # try:
-        #    r = self.driver.get("https://bc.game/#/login", auth=(username, password))
-        #    assert r.status_code == 200
-        # except:
-        #    print("something went wrong logging in")
         pass
 
     def get_matches(self):
         service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
         options = webdriver.ChromeOptions()
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
         caps = DesiredCapabilities.CHROME
         caps["pageLoadStrategy"] = "normal"
         driver = webdriver.Chrome(
@@ -118,7 +133,12 @@ class ThunderPickParser(MatchParser):
                 odds = soup.find_all("span", class_="odds-button__odds")
 
                 for i in range(0, len(odds), 2):
-                    self.matches[(home_teams[i // 2].text, away_teams[i // 2].text)] = (
+                    self.matches[
+                        (
+                            home_teams[i // 2].text.upper(),
+                            away_teams[i // 2].text.upper(),
+                        )
+                    ] = (
                         float(odds[i].text),
                         float(odds[i + 1].text),
                     )
