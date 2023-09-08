@@ -8,8 +8,8 @@ class ArbitrageService:
         self.matches = defaultdict(list)
         self.arbitrages = dict()
 
-    def add_parser(self, parser, name):
-        self.parsers[name] = parser
+    def add_parser(self, parser):
+        self.parsers[parser.website] = parser
 
     def show_matches(self):
         print("\n")

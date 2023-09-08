@@ -1,3 +1,4 @@
+import re
 import requests
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
@@ -5,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-import re
+from bettype import BetType
 
 
 class MatchParser(ABC):
@@ -20,7 +21,16 @@ class MatchParser(ABC):
 
 
 class BCGameParser(MatchParser):
-    def __init__(self):
+    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
+        URLS = {
+            BetType.CSGO: "https://bc.game/sports?bt-path=%2F%3FtopSport%3Dcounter-strike-109",
+            BetType.SOCCER: "",
+        }
+
+        self.url = URLS[variant]
+        self.website = "bc.game"
+        self.verbose = verbose
+        self.retries = retries
         self.matches = dict()
         self.session = requests.session()
 
@@ -42,12 +52,10 @@ class BCGameParser(MatchParser):
         driver = webdriver.Chrome(
             service=service, options=options, desired_capabilities=caps
         )
-        RETRIES = 3
-        for _ in range(RETRIES):
+
+        for _ in range(self.retries):
             try:
-                driver.get(
-                    "https://bc.game/sports?bt-path=%2F%3FtopSport%3Dcounter-strike-109"
-                )
+                driver.get(self.url)
                 shadow_host = driver.find_element(By.CSS_SELECTOR, "#bt-inner-page")
                 shadow_root = driver.execute_script(
                     "return arguments[0].shadowRoot;", shadow_host
@@ -94,11 +102,21 @@ class BCGameParser(MatchParser):
 
             except Exception as e:
                 print(f"[!] Something went wrong getting matches. Retrying...")
-                # print(e)
+                if self.verbose:
+                    print(e)
 
 
 class ThunderPickParser(MatchParser):
-    def __init__(self):
+    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
+        URLS = {
+            BetType.CSGO: "https://thunderpick.io/en/esports/csgo",
+            BetType.SOCCER: "",
+        }
+
+        self.website = "thunderpick.io"
+        self.verbose = verbose
+        self.retries = retries
+        self.url = URLS[variant]
         self.matches = dict()
         self.session = requests.session()
 
@@ -116,10 +134,9 @@ class ThunderPickParser(MatchParser):
         driver = webdriver.Chrome(
             service=service, options=options, desired_capabilities=caps
         )
-        RETRIES = 3
-        for _ in range(RETRIES):
+        for _ in range(self.retries):
             try:
-                driver.get("https://thunderpick.io/en/esports/csgo")
+                driver.get(self.url)
                 root_container = driver.find_element(
                     By.CSS_SELECTOR, "#match-list-header"
                 )
@@ -151,4 +168,5 @@ class ThunderPickParser(MatchParser):
 
             except Exception as e:
                 print(f"[!] Something went wrong getting matches. Retrying..")
-                # print(e)
+                if self.verbose:
+                    print(e)

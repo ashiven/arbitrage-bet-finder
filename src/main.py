@@ -1,17 +1,18 @@
 from service import ArbitrageService
 from parsers import BCGameParser, ThunderPickParser
+from bettype import BetType
 
 
 def main():
     AS = ArbitrageService()
 
     ## initialize parsers
-    bc = BCGameParser()
-    tp = ThunderPickParser()
+    bc = BCGameParser(variant=BetType.SOCCER, verbose=False)
+    tp = ThunderPickParser(variant=BetType.SOCCER, verbose=False)
 
     ## add parsers to service
-    AS.add_parser(bc, "bc.game")
-    AS.add_parser(tp, "thunderpick.io")
+    AS.add_parser(bc)
+    AS.add_parser(tp)
 
     ## get the latest matches and their odds for every service
     AS.accumulate_matches()
