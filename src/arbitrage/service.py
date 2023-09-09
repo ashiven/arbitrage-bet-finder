@@ -36,6 +36,7 @@ class ArbitrageService:
         self.show_matches()
 
     def find_arbitrages(self):
+        found = False
         for match, odds in self.matches.items():
             max_one = max(odds, key=lambda x: x[0][0])
             max_two = max(odds, key=lambda x: x[0][1])
@@ -44,7 +45,6 @@ class ArbitrageService:
 
             # calculate whether an arbitrage exists
             arbitrage = 1 / max_one[0][0] + 1 / max_two[0][1]
-            found = False
             if arbitrage < 1:
                 found = True
                 print(f"----{match[0]} VS {match[1]}----\n")
