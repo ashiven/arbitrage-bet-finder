@@ -4,7 +4,7 @@ from arbitrage.bettype import BetType
 
 
 def main():
-    AS = ArbitrageService(variant=BetType.CSGO, verbose=False)
+    AS = ArbitrageService(variant=BetType.CS, verbose=False)
 
     ## initialize parsers (the SOCCER variant does not work yet on parsers)
     bc = BCGameParser()

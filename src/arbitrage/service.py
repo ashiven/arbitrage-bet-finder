@@ -3,7 +3,7 @@ from collections import defaultdict
 
 
 class ArbitrageService:
-    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
+    def __init__(self, retries=3, variant=BetType.CS, verbose=False):
         self.parsers = dict()
         self.matches = defaultdict(list)
         self.arbitrages = dict()
