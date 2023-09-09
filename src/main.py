@@ -1,6 +1,6 @@
-from service import ArbitrageService
-from parsers import BCGameParser, ThunderPickParser
-from bettype import BetType
+from arbitrage.service import ArbitrageService
+from arbitrage.parsers import BCGameParser, ThunderPickParser
+from arbitrage.bettype import BetType
 
 
 def main():

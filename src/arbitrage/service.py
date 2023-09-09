@@ -1,4 +1,4 @@
-from parsers import *
+from arbitrage.parsers import *
 from collections import defaultdict
 
 

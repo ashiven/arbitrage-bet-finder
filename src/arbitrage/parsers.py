@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from bettype import BetType
+from arbitrage.bettype import BetType
 
 
 class MatchParser(ABC):
@@ -57,7 +57,7 @@ class BCGameParser(MatchParser):
             print("something went wrong logging in")
 
     def get_matches(self):
-        print("[+] Getting matches from bc.game")
+        print(f"[+] Getting matches from {self.website}")
         driver = create_driver()
 
         for _ in range(self.retries):
@@ -132,7 +132,7 @@ class ThunderPickParser(MatchParser):
         pass
 
     def get_matches(self):
-        print("[+] Getting matches from thunderpick.io")
+        print(f"[+] Getting matches from {self.website}")
         driver = create_driver()
 
         for _ in range(self.retries):
