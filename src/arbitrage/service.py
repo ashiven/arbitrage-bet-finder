@@ -59,7 +59,7 @@ class ArbitrageService:
                 print(
                     f"[+] Suggested arbitrage bet (non-biased): {bet_one}$ on {match[0]} and {bet_two}$ on {match[1]} for a profit of {WINNINGS - bet_one+bet_two}$\n"
                 )
-                print(f"[+] Suggested arbitrage bet (biased): ")
+                print(f"[+] Suggested arbitrage bet (biased): ")  # TODO
 
         if not found:
             print("Could not find any arbitrages :(")

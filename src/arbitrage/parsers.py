@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from arbitrage.bettype import BetType
 
 
@@ -24,7 +26,7 @@ class MatchParser(ABC):
 def create_driver():
     service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
     options = webdriver.ChromeOptions()
-    options.add_argument("headless")
+    # options.add_argument("headless")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     caps = DesiredCapabilities.CHROME
     caps["pageLoadStrategy"] = "normal"
@@ -32,6 +34,15 @@ def create_driver():
         service=service, options=options, desired_capabilities=caps
     )
     return driver
+
+
+def await_elem(driver, delay, by, id):
+    try:
+        return WebDriverWait(driver, delay).until(
+            EC.presence_of_element_located((by, id))
+        )
+    except:
+        print("Loading element took too long.")
 
 
 class BCGameParser(MatchParser):
@@ -63,7 +74,8 @@ class BCGameParser(MatchParser):
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                shadow_host = driver.find_element(By.CSS_SELECTOR, "#bt-inner-page")
+                shadow_host = await_elem(driver, 3, By.CSS_SELECTOR, "#bt-inner-page")
+                # shadow_host = driver.find_element(By.CSS_SELECTOR, "#bt-inner-page")
                 shadow_root = driver.execute_script(
                     "return arguments[0].shadowRoot;", shadow_host
                 )
@@ -121,7 +133,7 @@ class ThunderPickParser(MatchParser):
 
     def configure(self, retries, variant, verbose):
         URLS = {
-            BetType.CS: "https://thunderpick.io/en/esports/CS",
+            BetType.CS: "https://thunderpick.io/en/esports/csgo",
             BetType.SOCCER: "https://thunderpick.io/en/sports/football",
         }
         self.retries = retries
@@ -138,9 +150,12 @@ class ThunderPickParser(MatchParser):
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                root_container = driver.find_element(
-                    By.CSS_SELECTOR, "#match-list-header"
+                root_container = await_elem(
+                    driver, 3, By.CSS_SELECTOR, "#match-list-header"
                 )
+                # root_container = driver.find_element(
+                #    By.CSS_SELECTOR, "#match-list-header"
+                # )
                 soup = BeautifulSoup(
                     root_container.get_attribute("outerHTML"), "html.parser"
                 )
@@ -164,6 +179,78 @@ class ThunderPickParser(MatchParser):
                     odd_one = float(odds[0].text) if len(odds) > 1 else "TBA"
                     odd_two = float(odds[1].text) if len(odds) > 1 else "TBA"
                     self.matches[(team_one, team_two)] = (odd_one, odd_two)
+
+                break
+
+            except Exception as e:
+                print(f"[!] Something went wrong getting matches. Retrying..")
+                if self.verbose:
+                    print(e)
+
+
+class RivalryBetParser(MatchParser):
+    def __init__(self):
+        self.website = "rivalry.com"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
+        URLS = {
+            BetType.CS: "https://www.rivalry.com/esports/csgo-betting",
+            BetType.SOCCER: "https://www.rivalry.com/sports/football-betting",
+        }
+        self.retries = retries
+        self.url = URLS[variant]
+        self.verbose = verbose
+
+    def login(self, username, password):
+        pass
+
+    def get_matches(self):
+        print(f"[+] Getting matches from {self.website}")
+        driver = create_driver()
+
+        for _ in range(self.retries):
+            try:
+                driver.get(self.url)
+                root_container = await_elem(
+                    driver, 3, By.CLASS_NAME, "bet-center-content-markets"
+                )
+                # root_container = driver.find_element(
+                #     By.CLASS_NAME, "bet-center-content-markets"
+                # )
+                soup = BeautifulSoup(
+                    root_container.get_attribute("outerHTML"), "html.parser"
+                )
+
+                matches = soup.find_all(
+                    "div",
+                    class_="betline-competitors betline-matchup",
+                )
+
+                for match in matches:
+                    team_one = match.find(
+                        "button",
+                        class_="competitor right-facing-competitor right-facing-competitor-desktop",
+                    )
+                    team_two = match.find(
+                        "button",
+                        class_="competitor left-facing-competitor left-facing-competitor-desktop",
+                    )
+
+                    team_one_name = team_one.find(
+                        "div", class_="outcome-name"
+                    ).text.upper()
+                    team_one_odds = team_one.find("div", class_="outcome-odds").text
+                    team_two_name = team_two.find(
+                        "div", class_="outcome-name"
+                    ).text.upper()
+                    team_two_odds = team_two.find("div", class_="outcome-odds").text
+
+                    self.matches[(team_one_name, team_two_name)] = (
+                        float(team_one_odds),
+                        float(team_two_odds),
+                    )
 
                 break
 
