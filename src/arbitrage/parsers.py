@@ -75,7 +75,7 @@ class BCGameParser(MatchParser):
             try:
                 driver.get(self.url)
                 shadow_host = await_elem(driver, 3, By.CSS_SELECTOR, "#bt-inner-page")
-                # shadow_host = driver.find_element(By.CSS_SELECTOR, "#bt-inner-page")
+
                 shadow_root = driver.execute_script(
                     "return arguments[0].shadowRoot;", shadow_host
                 )
@@ -153,9 +153,7 @@ class ThunderPickParser(MatchParser):
                 root_container = await_elem(
                     driver, 3, By.CSS_SELECTOR, "#match-list-header"
                 )
-                # root_container = driver.find_element(
-                #    By.CSS_SELECTOR, "#match-list-header"
-                # )
+
                 soup = BeautifulSoup(
                     root_container.get_attribute("outerHTML"), "html.parser"
                 )
@@ -216,9 +214,7 @@ class RivalryBetParser(MatchParser):
                 root_container = await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
                 )
-                # root_container = driver.find_element(
-                #     By.CLASS_NAME, "bet-center-content-markets"
-                # )
+
                 soup = BeautifulSoup(
                     root_container.get_attribute("outerHTML"), "html.parser"
                 )

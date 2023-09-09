@@ -45,6 +45,10 @@ class ArbitrageService:
 
             # calculate whether an arbitrage exists
             arbitrage = 1 / max_one[0][0] + 1 / max_two[0][1]
+            if self.verbose:
+                print(
+                    f"{match[0]} VS {match[1]}\n - highest odds: {max_one[0][0]}  {max_two[0][1]}\n - probability:  {arbitrage*100:.2f}%\n"
+                )
             if arbitrage < 1:
                 found = True
                 print(f"----{match[0]} VS {match[1]}----\n")
@@ -59,7 +63,11 @@ class ArbitrageService:
                 print(
                     f"[+] Suggested arbitrage bet (non-biased): {bet_one}$ on {match[0]} and {bet_two}$ on {match[1]} for a profit of {WINNINGS - bet_one+bet_two}$\n"
                 )
-                print(f"[+] Suggested arbitrage bet (biased): ")  # TODO
+                print(f"[+] Suggested arbitrage bet (biased): ")
+                # TODO:
+                # 1) figure out biased arbitrage formula
+                # 2) enter found arbitrages in a decent format into self.arbitrages
+                # 3) create a show_arbitrages() function similar to show_matches()
 
         if not found:
             print("Could not find any arbitrages :(")

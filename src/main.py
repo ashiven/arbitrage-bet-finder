@@ -4,9 +4,10 @@ from arbitrage.bettype import BetType
 
 
 def main():
+    # (the SOCCER variant does not work yet)
     AS = ArbitrageService(variant=BetType.CS, verbose=True, retries=5)
 
-    ## initialize parsers (the SOCCER variant does not work yet on parsers)
+    ## initialize parsers
     bc = BCGameParser()
     tp = ThunderPickParser()
     rv = RivalryBetParser()
