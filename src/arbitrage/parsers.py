@@ -26,7 +26,7 @@ class MatchParser(ABC):
 def create_driver():
     service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
     options = webdriver.ChromeOptions()
-    # options.add_argument("headless")
+    options.add_argument("headless")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     caps = DesiredCapabilities.CHROME
     caps["pageLoadStrategy"] = "normal"
