@@ -4,11 +4,11 @@ from bettype import BetType
 
 
 def main():
-    AS = ArbitrageService()
+    AS = ArbitrageService(variant=BetType.CSGO, verbose=False)
 
     ## initialize parsers (the SOCCER variant does not work yet on parsers)
-    bc = BCGameParser(variant=BetType.CSGO, verbose=False)
-    tp = ThunderPickParser(variant=BetType.CSGO, verbose=False)
+    bc = BCGameParser()
+    tp = ThunderPickParser()
 
     ## add parsers to service
     AS.add_parser(bc)

@@ -20,19 +20,34 @@ class MatchParser(ABC):
         pass
 
 
+## helper functions
+def create_driver():
+    service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
+    options = webdriver.ChromeOptions()
+    options.add_argument("headless")
+    options.add_experimental_option("excludeSwitches", ["enable-logging"])
+    caps = DesiredCapabilities.CHROME
+    caps["pageLoadStrategy"] = "normal"
+    driver = webdriver.Chrome(
+        service=service, options=options, desired_capabilities=caps
+    )
+    return driver
+
+
 class BCGameParser(MatchParser):
-    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
+    def __init__(self):
+        self.website = "bc.game"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
         URLS = {
             BetType.CSGO: "https://bc.game/sports?bt-path=%2F%3FtopSport%3Dcounter-strike-109",
             BetType.SOCCER: "https://bc.game/sports?bt-path=%2Fsoccer-1",
         }
-
-        self.url = URLS[variant]
-        self.website = "bc.game"
-        self.verbose = verbose
         self.retries = retries
-        self.matches = dict()
-        self.session = requests.session()
+        self.url = URLS[variant]
+        self.verbose = verbose
 
     def login(self, username, password):
         try:
@@ -43,15 +58,7 @@ class BCGameParser(MatchParser):
 
     def get_matches(self):
         print("[+] Getting matches from bc.game")
-        service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        caps = DesiredCapabilities.CHROME
-        caps["pageLoadStrategy"] = "normal"
-        driver = webdriver.Chrome(
-            service=service, options=options, desired_capabilities=caps
-        )
+        driver = create_driver()
 
         for _ in range(self.retries):
             try:
@@ -107,33 +114,27 @@ class BCGameParser(MatchParser):
 
 
 class ThunderPickParser(MatchParser):
-    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
+    def __init__(self):
+        self.website = "thunderpick.io"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
         URLS = {
             BetType.CSGO: "https://thunderpick.io/en/esports/csgo",
             BetType.SOCCER: "https://thunderpick.io/en/sports/football",
         }
-
-        self.website = "thunderpick.io"
-        self.verbose = verbose
         self.retries = retries
         self.url = URLS[variant]
-        self.matches = dict()
-        self.session = requests.session()
+        self.verbose = verbose
 
     def login(self, username, password):
         pass
 
     def get_matches(self):
         print("[+] Getting matches from thunderpick.io")
-        service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        caps = DesiredCapabilities.CHROME
-        caps["pageLoadStrategy"] = "normal"
-        driver = webdriver.Chrome(
-            service=service, options=options, desired_capabilities=caps
-        )
+        driver = create_driver()
+
         for _ in range(self.retries):
             try:
                 driver.get(self.url)

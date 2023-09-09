@@ -3,12 +3,16 @@ from collections import defaultdict
 
 
 class ArbitrageService:
-    def __init__(self):
+    def __init__(self, retries=3, variant=BetType.CSGO, verbose=False):
         self.parsers = dict()
         self.matches = defaultdict(list)
         self.arbitrages = dict()
+        self.retries = retries
+        self.variant = variant
+        self.verbose = verbose
 
     def add_parser(self, parser):
+        parser.configure(self.retries, self.variant, self.verbose)
         self.parsers[parser.website] = parser
 
     def show_matches(self):
