@@ -49,8 +49,17 @@ class ArbitrageService:
                 found = True
                 print(f"----{match[0]} VS {match[1]}----\n")
                 print(
-                    f"[!] Found an arbitrage between {max_one[1]} and {max_two[1]} with a percent of {arbitrage*100:.2f}%\n"
+                    f"[!] Found an arbitrage between {max_one[1]} and {max_two[1]} with a probability of {arbitrage*100:.2f}%\n"
                 )
+                WINNINGS = 100
+                odd_one = max_one[0][0]
+                odd_two = max_two[0][1]
+                bet_one = WINNINGS / odd_one
+                bet_two = WINNINGS / odd_two
+                print(
+                    f"[+] Suggested arbitrage bet (non-biased): {bet_one}$ on {match[0]} and {bet_two}$ on {match[1]} for a profit of {WINNINGS - bet_one+bet_two}$\n"
+                )
+                print(f"[+] Suggested arbitrage bet (biased): ")
 
         if not found:
             print("Could not find any arbitrages :(")
