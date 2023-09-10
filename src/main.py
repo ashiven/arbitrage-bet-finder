@@ -19,8 +19,8 @@ def main():
     bi = BetsIOParser()
 
     ## add parsers to service
-    # AS.add_parser(bc)
-    # AS.add_parser(tp)
+    AS.add_parser(bc)
+    AS.add_parser(tp)
     AS.add_parser(rv)
     # AS.add_parser(bi)
 
