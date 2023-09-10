@@ -40,7 +40,7 @@ class ArbitrageService:
         for match, odds in self.matches.items():
             max_one = max(odds, key=lambda x: x[0][0])
             max_two = max(odds, key=lambda x: x[0][1])
-            if max_one[0][0] == "TBA" or max_two[0][1] == "TBA":
+            if max_one[0][0] == -1 or max_two[0][1] == -1:
                 continue
 
             # calculate whether an arbitrage exists
@@ -51,6 +51,13 @@ class ArbitrageService:
                 )
             if arbitrage < 1:
                 found = True
+                self.arbitrages[match] = [
+                    max_one[1],
+                    max_two[1],
+                    max_one[0][0],
+                    max_two[0][1],
+                    f"{arbitrage*100:.2f}%",
+                ]
                 print(f"----{match[0]} VS {match[1]}----\n")
                 print(
                     f"[!] Found an arbitrage between {max_one[1]} and {max_two[1]} with a probability of {arbitrage*100:.2f}%\n"

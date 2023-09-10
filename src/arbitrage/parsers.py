@@ -23,10 +23,11 @@ class MatchParser(ABC):
 
 
 ## helper functions
-def create_driver():
+def create_driver(headless=True):
     service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
     options = webdriver.ChromeOptions()
-    # options.add_argument("headless")
+    if headless:
+        options.add_argument("headless")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     caps = DesiredCapabilities.CHROME
     caps["pageLoadStrategy"] = "normal"
@@ -174,8 +175,8 @@ class ThunderPickParser(MatchParser):
                     ).text.upper()
 
                     odds = match.find_all("span", class_="odds-button__odds")
-                    odd_one = float(odds[0].text) if len(odds) > 1 else "TBA"
-                    odd_two = float(odds[1].text) if len(odds) > 1 else "TBA"
+                    odd_one = float(odds[0].text) if len(odds) > 1 else -1
+                    odd_two = float(odds[1].text) if len(odds) > 1 else -1
                     self.matches[(team_one, team_two)] = (odd_one, odd_two)
 
                 break
@@ -206,13 +207,17 @@ class RivalryParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        # TODO: figure out a way to parse from rivalry in headless mode
+        driver = create_driver(headless=False)
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
                 root_container = await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
+                )
+                driver.execute_script(
+                    "arguments[0].scrollIntoView(true);", root_container
                 )
 
                 soup = BeautifulSoup(
@@ -327,6 +332,8 @@ class ggBetParser(MatchParser):
                     print(e)
 
 
+# TODO:
+# - cs website does not contain the matches when accessed through chromedriver
 class BetsIOParser(MatchParser):
     def __init__(self):
         self.website = "bets.io"
@@ -366,14 +373,16 @@ class BetsIOParser(MatchParser):
 
                 for match in matches:
                     teams = match.find_all("span", class_="sb-TeamColumn-name")
+                    if not teams:
+                        continue
                     team_one_name = teams[0].text.upper()
                     team_two_name = teams[1].text.upper()
 
                     odds = match.find_all(
                         "div", class_="sb-AnimatedOdd sb-OddsCell-value"
                     )
-                    team_one_odds = float(odds[0].text) if len(odds) > 1 else "TBA"
-                    team_two_odds = float(odds[1].text) if len(odds) > 1 else "TBA"
+                    team_one_odds = float(odds[0].text) if len(odds) > 1 else -1
+                    team_two_odds = float(odds[1].text) if len(odds) > 1 else -1
 
                     self.matches[(team_one_name, team_two_name)] = (
                         team_one_odds,
