@@ -207,7 +207,8 @@ class RivalryParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        # TODO: figure out a way to parse from rivalry in headless mode
+        # TODO:
+        # - figure out a way to parse from rivalry in headless mode
         driver = create_driver(headless=False)
 
         for _ in range(self.retries):
@@ -262,6 +263,7 @@ class RivalryParser(MatchParser):
 
 
 # TODO:
+# - create parser
 class ggBetParser(MatchParser):
     def __init__(self):
         self.website = "gg.bet"

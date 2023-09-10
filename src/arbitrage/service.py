@@ -73,8 +73,10 @@ class ArbitrageService:
                 print(f"[+] Suggested arbitrage bet (biased): ")
                 # TODO:
                 # 1) figure out biased arbitrage formula
-                # 2) enter found arbitrages in a decent format into self.arbitrages
-                # 3) create a show_arbitrages() function similar to show_matches()
 
         if not found:
             print("Could not find any arbitrages :(")
+
+    # TODO:
+    def show_arbitrages():
+        pass
