@@ -26,7 +26,7 @@ class MatchParser(ABC):
 def create_driver():
     service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
     options = webdriver.ChromeOptions()
-    options.add_argument("headless")
+    # options.add_argument("headless")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     caps = DesiredCapabilities.CHROME
     caps["pageLoadStrategy"] = "normal"
@@ -186,7 +186,7 @@ class ThunderPickParser(MatchParser):
                     print(e)
 
 
-class RivalryBetParser(MatchParser):
+class RivalryParser(MatchParser):
     def __init__(self):
         self.website = "rivalry.com"
         self.matches = dict()
@@ -246,6 +246,138 @@ class RivalryBetParser(MatchParser):
                     self.matches[(team_one_name, team_two_name)] = (
                         float(team_one_odds),
                         float(team_two_odds),
+                    )
+
+                break
+
+            except Exception as e:
+                print(f"[!] Something went wrong getting matches. Retrying..")
+                if self.verbose:
+                    print(e)
+
+
+# TODO:
+class ggBetParser(MatchParser):
+    def __init__(self):
+        self.website = "gg.bet"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
+        URLS = {
+            BetType.CS: "https://gg.bet/en/?sportIds%5B%5D=esports_counter_strike",
+            BetType.SOCCER: "https://gg.bet/en/?sportIds%5B%5D=football",
+        }
+        self.retries = retries
+        self.url = URLS[variant]
+        self.verbose = verbose
+
+    def login(self, username, password):
+        pass
+
+    def get_matches(self):
+        print(f"[+] Getting matches from {self.website}")
+        driver = create_driver()
+
+        for _ in range(self.retries):
+            try:
+                driver.get(self.url)
+                root_container = await_elem(
+                    driver, 3, By.CLASS_NAME, "bet-center-content-markets"
+                )
+
+                soup = BeautifulSoup(
+                    root_container.get_attribute("outerHTML"), "html.parser"
+                )
+
+                matches = soup.find_all(
+                    "div",
+                    class_="betline-competitors betline-matchup",
+                )
+
+                for match in matches:
+                    team_one = match.find(
+                        "button",
+                        class_="competitor right-facing-competitor right-facing-competitor-desktop",
+                    )
+                    team_two = match.find(
+                        "button",
+                        class_="competitor left-facing-competitor left-facing-competitor-desktop",
+                    )
+
+                    team_one_name = team_one.find(
+                        "div", class_="outcome-name"
+                    ).text.upper()
+                    team_one_odds = team_one.find("div", class_="outcome-odds").text
+                    team_two_name = team_two.find(
+                        "div", class_="outcome-name"
+                    ).text.upper()
+                    team_two_odds = team_two.find("div", class_="outcome-odds").text
+
+                    self.matches[(team_one_name, team_two_name)] = (
+                        float(team_one_odds),
+                        float(team_two_odds),
+                    )
+
+                break
+
+            except Exception as e:
+                print(f"[!] Something went wrong getting matches. Retrying..")
+                if self.verbose:
+                    print(e)
+
+
+class BetsIOParser(MatchParser):
+    def __init__(self):
+        self.website = "bets.io"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
+        URLS = {
+            BetType.CS: "https://sport.bets.io/en/cs",
+            BetType.SOCCER: "https://sport.bets.io/en/soccer",
+        }
+        self.retries = retries
+        self.url = URLS[variant]
+        self.verbose = verbose
+
+    def login(self, username, password):
+        pass
+
+    def get_matches(self):
+        print(f"[+] Getting matches from {self.website}")
+        driver = create_driver()
+
+        for _ in range(self.retries):
+            try:
+                driver.get(self.url)
+
+                root_container = await_elem(driver, 3, By.CLASS_NAME, "sb-PageContent")
+
+                soup = BeautifulSoup(
+                    root_container.get_attribute("outerHTML"), "html.parser"
+                )
+
+                matches = soup.find_all(
+                    "div",
+                    class_="sb-BettingTable-row",
+                )
+
+                for match in matches:
+                    teams = match.find_all("span", class_="sb-TeamColumn-name")
+                    team_one_name = teams[0].text.upper()
+                    team_two_name = teams[1].text.upper()
+
+                    odds = match.find_all(
+                        "div", class_="sb-AnimatedOdd sb-OddsCell-value"
+                    )
+                    team_one_odds = float(odds[0].text) if len(odds) > 1 else "TBA"
+                    team_two_odds = float(odds[1].text) if len(odds) > 1 else "TBA"
+
+                    self.matches[(team_one_name, team_two_name)] = (
+                        team_one_odds,
+                        team_two_odds,
                     )
 
                 break
