@@ -10,7 +10,7 @@ from arbitrage.bettype import BetType
 
 def main():
     # (the SOCCER variant does not work yet)
-    AS = ArbitrageService(variant=BetType.CS, verbose=True, retries=5)
+    AS = ArbitrageService(variant=BetType.CS, verbose=False, retries=5)
 
     ## initialize parsers
     bc = BCGameParser()

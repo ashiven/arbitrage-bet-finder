@@ -16,6 +16,9 @@ class ArbitrageService:
         self.parsers[parser.website] = parser
 
     def show_matches(self):
+        self.matches = dict(
+            reversed(sorted(self.matches.items(), key=lambda x: len(x[1])))
+        )
         print("\n")
         for match, odds in self.matches.items():
             print(f"----{match[0]} VS {match[1]}----\n")
@@ -52,27 +55,28 @@ class ArbitrageService:
                 )
             if arbitrage < 1:
                 found = True
-                self.arbitrages[match] = (
+                self.arbitrages[(match[0], match[1])] = [
                     max_one[1],
                     max_two[1],
                     max_one[0][0],
                     max_two[0][1],
                     f"{arbitrage*100:.2f}%",
-                )
+                ]
         if not found:
             print("Could not find any arbitrages :(")
         else:
             self.show_arbitrages()
 
     def show_arbitrages(self):
+        print(self.arbitrages)
         for match, arbitrage in self.arbitrages:
             print(f"----{match[0]} VS {match[1]}----\n")
             print(
-                f"[!] Found an arbitrage between {arbitrage[0]} and {arbitrage[1]} with a probability of {arbitrage[5]}\n"
+                f"[!] Found an arbitrage between {arbitrage[0]} and {arbitrage[1]} with a probability of {arbitrage[4]}\n"
             )
             WINNINGS = 100
-            odd_one = arbitrage[3]
-            odd_two = arbitrage[4]
+            odd_one = arbitrage[2]
+            odd_two = arbitrage[3]
             bet_one = WINNINGS / odd_one
             bet_two = WINNINGS / odd_two
             print(

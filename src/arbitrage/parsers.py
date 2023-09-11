@@ -208,12 +208,12 @@ class RivalryParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        # TODO: find out why this doesn't work in headless mode
+        driver = create_driver(headless=False)
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                sleep(5)
 
                 root_container = await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
@@ -362,7 +362,7 @@ class BetsIOParser(MatchParser):
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                sleep(5)
+                sleep(3)
 
                 root_container = await_elem(driver, 3, By.CLASS_NAME, "sb-PageContent")
 
