@@ -63,7 +63,7 @@ class ArbitrageService:
                     f"{arbitrage*100:.2f}%",
                 )
         if not found:
-            print("Could not find any arbitrages :(")
+            print("[!] Could not find any arbitrages :(")
         else:
             self.show_arbitrages()
 
@@ -84,4 +84,4 @@ class ArbitrageService:
             # TODO:
             # - figure out biased arbitrage formula and EV bet formula
             print(f"[+] Suggested arbitrage bet (biased):\n")
-            print(f"[+] Suggsted EV bet: \n")
+            print(f"[+] Suggested EV bet:\n")
