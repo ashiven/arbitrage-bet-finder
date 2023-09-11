@@ -55,7 +55,7 @@ class ArbitrageService:
                 )
             if arbitrage < 1:
                 found = True
-                self.arbitrages[(match[0], match[1])] = (
+                self.arbitrages[match] = (
                     max_one[1],
                     max_two[1],
                     max_one[0][0],
