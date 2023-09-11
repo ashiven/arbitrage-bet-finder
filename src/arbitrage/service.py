@@ -36,6 +36,7 @@ class ArbitrageService:
         self.show_matches()
 
     def find_arbitrages(self):
+        print("Finding arbitrage bet opportunities... Please wait.")
         found = False
         for match, odds in self.matches.items():
             max_one = max(odds, key=lambda x: x[0][0])
@@ -51,32 +52,33 @@ class ArbitrageService:
                 )
             if arbitrage < 1:
                 found = True
-                self.arbitrages[match] = [
+                self.arbitrages[match] = (
                     max_one[1],
                     max_two[1],
                     max_one[0][0],
                     max_two[0][1],
                     f"{arbitrage*100:.2f}%",
-                ]
-                print(f"----{match[0]} VS {match[1]}----\n")
-                print(
-                    f"[!] Found an arbitrage between {max_one[1]} and {max_two[1]} with a probability of {arbitrage*100:.2f}%\n"
                 )
-                WINNINGS = 100
-                odd_one = max_one[0][0]
-                odd_two = max_two[0][1]
-                bet_one = WINNINGS / odd_one
-                bet_two = WINNINGS / odd_two
-                print(
-                    f"[+] Suggested arbitrage bet (non-biased): {bet_one}$ on {match[0]} and {bet_two}$ on {match[1]} for a profit of {WINNINGS - bet_one+bet_two}$\n"
-                )
-                print(f"[+] Suggested arbitrage bet (biased): ")
-                # TODO:
-                # 1) figure out biased arbitrage formula
-
         if not found:
             print("Could not find any arbitrages :(")
+        else:
+            self.show_arbitrages()
 
-    # TODO:
-    def show_arbitrages():
-        pass
+    def show_arbitrages(self):
+        for match, arbitrage in self.arbitrages:
+            print(f"----{match[0]} VS {match[1]}----\n")
+            print(
+                f"[!] Found an arbitrage between {arbitrage[0]} and {arbitrage[1]} with a probability of {arbitrage[5]}\n"
+            )
+            WINNINGS = 100
+            odd_one = arbitrage[3]
+            odd_two = arbitrage[4]
+            bet_one = WINNINGS / odd_one
+            bet_two = WINNINGS / odd_two
+            print(
+                f"[+] Suggested arbitrage bet (non-biased): {bet_one:.2f}$ on {match[0]} and {bet_two:.2f}$ on {match[1]} for a profit of {(WINNINGS - (bet_one+bet_two)):.2f}$\n"
+            )
+            # TODO:
+            # - figure out biased arbitrage formula and EV bet formula
+            print(f"[+] Suggested arbitrage bet (biased):\n")
+            print(f"[+] Suggsted EV bet: \n")

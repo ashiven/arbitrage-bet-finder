@@ -22,7 +22,7 @@ def main():
     AS.add_parser(bc)
     AS.add_parser(tp)
     AS.add_parser(rv)
-    # AS.add_parser(bi)
+    AS.add_parser(bi)
 
     ## get the latest matches and their odds for every website
     AS.accumulate_matches()

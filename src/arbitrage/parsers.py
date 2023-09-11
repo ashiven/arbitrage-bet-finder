@@ -1,5 +1,6 @@
 import re
 import requests
+from time import sleep
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -207,13 +208,13 @@ class RivalryParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        # TODO:
-        # - figure out a way to parse from rivalry in headless mode
-        driver = create_driver(headless=False)
+        driver = create_driver()
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
+                sleep(5)
+
                 root_container = await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
                 )
@@ -239,6 +240,8 @@ class RivalryParser(MatchParser):
                         "button",
                         class_="competitor left-facing-competitor left-facing-competitor-desktop",
                     )
+                    if not team_one or not team_two:
+                        continue
 
                     team_one_name = team_one.find(
                         "div", class_="outcome-name"
@@ -334,8 +337,6 @@ class ggBetParser(MatchParser):
                     print(e)
 
 
-# TODO:
-# - cs website does not contain the matches when accessed through chromedriver
 class BetsIOParser(MatchParser):
     def __init__(self):
         self.website = "bets.io"
@@ -361,6 +362,7 @@ class BetsIOParser(MatchParser):
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
+                sleep(5)
 
                 root_container = await_elem(driver, 3, By.CLASS_NAME, "sb-PageContent")
 
