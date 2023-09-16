@@ -2,5 +2,6 @@ from enum import Enum
 
 
 class BetType(Enum):
-    CS = 0
-    SOCCER = 1
+    CS = "Counter Strike"
+    LOL = "League of Legends"
+    SOCCER = "Soccer"

@@ -208,7 +208,8 @@ class RivalryParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        # TODO: find out why this doesn't work in headless mode
+        # TODO:
+        # - find out why this doesn't work in headless mode
         driver = create_driver(headless=False)
 
         for _ in range(self.retries):
@@ -373,6 +374,83 @@ class BetsIOParser(MatchParser):
                 matches = soup.find_all(
                     "div",
                     class_="sb-BettingTable-row",
+                )
+
+                for match in matches:
+                    teams = match.find_all("span", class_="sb-TeamColumn-name")
+                    if not teams:
+                        continue
+                    team_one_name = teams[0].text.upper()
+                    team_two_name = teams[1].text.upper()
+
+                    odds = match.find_all(
+                        "div", class_="sb-AnimatedOdd sb-OddsCell-value"
+                    )
+                    team_one_odds = float(odds[0].text) if len(odds) > 1 else -1
+                    team_two_odds = float(odds[1].text) if len(odds) > 1 else -1
+
+                    self.matches[(team_one_name, team_two_name)] = (
+                        team_one_odds,
+                        team_two_odds,
+                    )
+
+                break
+
+            except Exception as e:
+                print(f"[!] Something went wrong getting matches. Retrying..")
+                if self.verbose:
+                    print(e)
+
+
+# TODO:
+# - create parser
+class TrustDiceWin(MatchParser):
+    def __init__(self):
+        self.website = "trustdice.win"
+        self.matches = dict()
+        self.session = requests.session()
+
+    def configure(self, retries, variant, verbose):
+        URLS = {
+            BetType.CS: "https://trustdice.win/esports/cs-go/upcoming",
+            BetType.SOCCER: "https://trustdice.win/sports/soccer/upcoming",
+        }
+        self.retries = retries
+        self.url = URLS[variant]
+        self.verbose = verbose
+
+    def login(self, username, password):
+        pass
+
+    def get_matches(self):
+        print(f"[+] Getting matches from {self.website}")
+        driver = create_driver()
+
+        for _ in range(self.retries):
+            try:
+                driver.get(self.url)
+                sleep(2)
+
+                expansion_buttons = driver.find_elements(
+                    By.CSS_SELECTOR, "[class*=MuiExpansionPanelSummary-expandIcon]"
+                )
+
+                for button in expansion_buttons:
+                    button.click()
+
+                sleep(2)
+
+                root_container = await_elem(
+                    driver, 3, By.XPATH, "//*[@id='mainBG']/div[1]/div[1]"
+                )
+
+                soup = BeautifulSoup(
+                    root_container.get_attribute("outerHTML"), "html.parser"
+                )
+
+                matches = soup.find_all(
+                    "div",
+                    class_=re.compile(r"\bMuiExpansionPanelDetails-root\b"),
                 )
 
                 for match in matches:
