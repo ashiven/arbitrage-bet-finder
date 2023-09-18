@@ -1,30 +1,21 @@
 import re
-import requests
-from time import sleep
 from abc import ABC, abstractmethod
+from time import sleep
+
+import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
 from arbitrage.bettype import BetType
 
 
-class MatchParser(ABC):
-    ## not all sites require a login to view match information
-    @abstractmethod
-    def login(self):
-        pass
-
-    @abstractmethod
-    def get_matches(self):
-        pass
-
-
 ## helper functions
-def create_driver(headless=True):
+def _create_driver(headless=True):
     service = Service("C:\Program Files (x86)\Google\chromedriver.exe")
     options = webdriver.ChromeOptions()
     if headless:
@@ -38,13 +29,24 @@ def create_driver(headless=True):
     return driver
 
 
-def await_elem(driver, delay, by, id):
+def _await_elem(driver, delay, by, id):
     try:
         return WebDriverWait(driver, delay).until(
             EC.presence_of_element_located((by, id))
         )
     except:
         print("Loading element took too long.")
+
+
+class MatchParser(ABC):
+    ## not all sites require a login to view match information
+    @abstractmethod
+    def login(self):
+        pass
+
+    @abstractmethod
+    def get_matches(self):
+        pass
 
 
 class BCGameParser(MatchParser):
@@ -71,12 +73,12 @@ class BCGameParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        driver = _create_driver()
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                shadow_host = await_elem(driver, 3, By.CSS_SELECTOR, "#bt-inner-page")
+                shadow_host = _await_elem(driver, 3, By.CSS_SELECTOR, "#bt-inner-page")
 
                 shadow_root = driver.execute_script(
                     "return arguments[0].shadowRoot;", shadow_host
@@ -147,12 +149,12 @@ class ThunderPickParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        driver = _create_driver()
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                root_container = await_elem(
+                root_container = _await_elem(
                     driver, 3, By.CSS_SELECTOR, "#match-list-header"
                 )
 
@@ -210,13 +212,13 @@ class RivalryParser(MatchParser):
         print(f"[+] Getting matches from {self.website}")
         # TODO:
         # - find out why this doesn't work in headless mode
-        driver = create_driver(headless=False)
+        driver = _create_driver(headless=False)
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
 
-                root_container = await_elem(
+                root_container = _await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
                 )
                 driver.execute_script(
@@ -288,12 +290,12 @@ class ggBetParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        driver = _create_driver()
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
-                root_container = await_elem(
+                root_container = _await_elem(
                     driver, 3, By.CLASS_NAME, "bet-center-content-markets"
                 )
 
@@ -358,14 +360,14 @@ class BetsIOParser(MatchParser):
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        driver = _create_driver()
 
         for _ in range(self.retries):
             try:
                 driver.get(self.url)
                 sleep(3)
 
-                root_container = await_elem(driver, 3, By.CLASS_NAME, "sb-PageContent")
+                root_container = _await_elem(driver, 3, By.CLASS_NAME, "sb-PageContent")
 
                 soup = BeautifulSoup(
                     root_container.get_attribute("outerHTML"), "html.parser"
@@ -404,7 +406,7 @@ class BetsIOParser(MatchParser):
 
 # TODO:
 # - create parser
-class TrustDiceWin(MatchParser):
+class TrustDiceWinParser(MatchParser):
     def __init__(self):
         self.website = "trustdice.win"
         self.matches = dict()
@@ -417,14 +419,14 @@ class TrustDiceWin(MatchParser):
         }
         self.retries = retries
         self.url = URLS[variant]
-        self.verbose = verbose
+        self.verbose = True  # change back to verbose
 
     def login(self, username, password):
         pass
 
     def get_matches(self):
         print(f"[+] Getting matches from {self.website}")
-        driver = create_driver()
+        driver = _create_driver(headless=False)
 
         for _ in range(self.retries):
             try:
@@ -438,9 +440,9 @@ class TrustDiceWin(MatchParser):
                 for button in expansion_buttons:
                     button.click()
 
-                sleep(2)
+                sleep(10)
 
-                root_container = await_elem(
+                root_container = _await_elem(
                     driver, 3, By.XPATH, "//*[@id='mainBG']/div[1]/div[1]"
                 )
 

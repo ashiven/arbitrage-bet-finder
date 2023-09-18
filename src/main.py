@@ -1,11 +1,12 @@
-from arbitrage.service import ArbitrageService
+from arbitrage.bettype import BetType
 from arbitrage.parsers import (
     BCGameParser,
-    ThunderPickParser,
-    RivalryParser,
     BetsIOParser,
+    RivalryParser,
+    ThunderPickParser,
+    TrustDiceWinParser,
 )
-from arbitrage.bettype import BetType
+from arbitrage.service import ArbitrageService
 
 
 def main():
@@ -17,12 +18,14 @@ def main():
     tp = ThunderPickParser()
     rv = RivalryParser()
     bi = BetsIOParser()
+    tw = TrustDiceWinParser()
 
     ## add parsers to service
-    AS.add_parser(bc)
-    AS.add_parser(tp)
-    AS.add_parser(rv)
-    AS.add_parser(bi)
+    # AS.add_parser(bc)
+    # AS.add_parser(tp)
+    # AS.add_parser(rv)
+    # AS.add_parser(bi)
+    AS.add_parser(tw)
 
     ## get the latest matches and their odds for every website
     AS.accumulate_matches()
